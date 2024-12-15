@@ -8,6 +8,14 @@
         "env": []
     },
     {
+        "id": "99a0e61b863e7860",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "6ad7c930.1a06b8",
         "type": "ui_base",
         "theme": {
@@ -163,8 +171,9 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Init flow Variables",
-        "func": "var trayProps = {\n    box         :   env.get(\"BOX\"),\n    type        :   env.get(\"TRAYTYPE\"),\n};\nflow.set('trayProps',trayProps);\nflow.set('settingInProgress', false);\nflow.set('traysConfig',[]);\nreturn {topic: \"getTrayProps\", payload: true};  \n",
+        "func": "var trayProps = {\n    box         :   env.get(\"BOX\"),\n    type        :   env.get(\"TRAYTYPE\"),\n};\nflow.set('trayProps',trayProps);\nflow.set('settingInProgress', false);\nflow.set('traysConfig',[]);\nflow.set('badgeSummary',[]);\nreturn {topic: \"getTrayProps\", payload: true};  \n",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -412,7 +421,7 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Save Trays in flow",
-        "func": "let tray = msg.payload;\nif (tray.name == 'admin')\n{\n    tray.reloadTrays.value = 0;\n    flow.set('adminTray', tray);\n    return null;\n}\nlet traysConfig = flow.get('traysConfig');\nlet picobusCubes = [];\nlet picobusSettingCubes = [];\nlet keys = Object.keys(msg.payload)\nlet byteLength = 0;\nfor (let ikey  in keys)\n{\n    if (msg.payload[keys[ikey]].hasOwnProperty('type'))\n    {\n        if (msg.payload[keys[ikey]].hasOwnProperty('picobus')) \n        {\n            byteLength = byteLength + getByteLength(msg.payload[keys[ikey]].picobus.type);\n            picobusCubes.push(keys[ikey]);\n            if (msg.payload[keys[ikey]].action == \"setting\") \n            {\n                picobusSettingCubes.push(keys[ikey]);\n            }\n        }\n    }\n}\ntray.trayControl.value = 0;\nlet index = -1;\nfor (let itray in traysConfig)\n{\n    if ((traysConfig[itray].tray.type == tray.type) && (traysConfig[itray].tray.name == tray.name))\n    {\n        index = Number(itray);\n    }\n}\nif (index < 0)\n{\n    traysConfig.push({tray:tray, picobusCubes:picobusCubes, picobusSettingCubes:picobusSettingCubes, archiveTime:tray.timeStamp, cubeType:\"cube\", byteLength:byteLength});\n}\nelse\n{\n    traysConfig[index] = {tray:tray, picobusCubes:picobusCubes, picobusSettingCubes:picobusSettingCubes, archiveTime:tray.timeStamp, cubeType:\"cube\", byteLength:byteLength};\n}\nreturn null;\n\nfunction getByteLength(picobusType)\n{\n    let bytes = 0;\n    if (picobusType.indexOf(\"8\")  >= 0) bytes = 1;\n    if (picobusType.indexOf(\"16\") >= 0) bytes = 2;\n    if (picobusType.indexOf(\"32\") >= 0) bytes = 4;\n    if (picobusType.indexOf(\"64\") >= 0) bytes = 8;\n    return bytes;\n}",
+        "func": "let tray = msg.payload;\nif (tray.name == 'admin')\n{\n    tray.reloadTrays.value = 0;\n//    tray.badgeStatus.value.length = 0;\n    flow.set('adminTray', tray);\n    return null;\n}\n\nlet traysConfig = flow.get('traysConfig');\nlet picobusCubes = [];\nlet picobusSettingCubes = [];\nlet keys = Object.keys(msg.payload)\nlet byteLength = 0;\nfor (let ikey  in keys)\n{\n    if (msg.payload[keys[ikey]].hasOwnProperty('type'))\n    {\n        if (msg.payload[keys[ikey]].hasOwnProperty('picobus')) \n        {\n            byteLength = byteLength + getByteLength(msg.payload[keys[ikey]].picobus.type);\n            picobusCubes.push(keys[ikey]);\n            if (msg.payload[keys[ikey]].action == \"setting\") \n            {\n                picobusSettingCubes.push(keys[ikey]);\n            }\n        }\n    }\n}\ntray.trayControl.value = 0;\nlet index = -1;\nfor (let itray in traysConfig)\n{\n    if ((traysConfig[itray].tray.type == tray.type) && (traysConfig[itray].tray.name == tray.name))\n    {\n        index = Number(itray);\n    }\n}\nif (index < 0)\n{\n    traysConfig.push({tray:tray, picobusCubes:picobusCubes, picobusSettingCubes:picobusSettingCubes, archiveTime:tray.timeStamp, cubeType:\"cube\", byteLength:byteLength});\n}\nelse\n{\n    traysConfig[index] = {tray:tray, picobusCubes:picobusCubes, picobusSettingCubes:picobusSettingCubes, archiveTime:tray.timeStamp, cubeType:\"cube\", byteLength:byteLength};\n}\n\nlet badgeSummary = flow.get('badgeSummary');\nbadgeSummary.push({name:tray.name, user:'none', status:0, router:\"\"});\n\nreturn null;\n\nfunction getByteLength(picobusType)\n{\n    let bytes = 0;\n    if (picobusType.indexOf(\"8\")  >= 0) bytes = 1;\n    if (picobusType.indexOf(\"16\") >= 0) bytes = 2;\n    if (picobusType.indexOf(\"32\") >= 0) bytes = 4;\n    if (picobusType.indexOf(\"64\") >= 0) bytes = 8;\n    return bytes;\n}",
         "outputs": 0,
         "timeout": "",
         "noerr": 0,
@@ -430,7 +439,9 @@
         "name": "New Reading out",
         "mode": "link",
         "links": [
-            "6b45b4c31fad6b8b"
+            "6b45b4c31fad6b8b",
+            "8c3a8a2ad2d24b5c",
+            "308dd6d5df455e02"
         ],
         "x": 575,
         "y": 640,
@@ -454,7 +465,7 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Create Readings",
-        "func": "let topicSplit = msg.topic.split('/');\nif (topicSplit[1] == 'tray') return [null,null,null];\nlet trayName = topicSplit[3];\nlet traysConfig = flow.get('traysConfig');\nif (traysConfig == undefined) return [null,null,null];\nif (traysConfig.length < 1) return [null,null,null];\nlet trayConfig = null;\nlet trayIndex = -1;\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.name == trayName)\n    {\n        trayConfig = traysConfig[ii];\n        trayIndex = ii;\n    }\n}\nif (trayConfig ==  null) return [null,null,null];\ntrayConfig.cubeType = topicSplit[1];\ntrayConfig.tray.timeStamp = new Date().getTime();\nlet dataview  = new DataView(new ArrayBuffer(msg.payload.length));\nfor (let ib = 0; ib < msg.payload.length; ++ib)   dataview.setUint8(ib, msg.payload[ib]);\nlet state = dataview.getUint8(0);\n\nif (state == 1)\n{\n    return [null, null, {topic:\"initDevice\",payload:trayConfig}];\n}\ntrayConfig.tray.forceArchiveData.value = dataview.getUint8(1);\ntrayConfig.tray.watchdog.value = dataview.getUint16(2,true);\ntrayConfig.tray.deviceMac.value = dataview.getUint8(4).toString(16);\nif (trayConfig.tray.deviceMac.value.length < 2) trayConfig.tray.deviceMac.value = \"0\" + trayConfig.tray.deviceMac.value;\nfor (let ii = 1; ii < 6; ++ii)\n{\n    let hexy = dataview.getUint8(4 + ii).toString(16);\n    if (hexy.length < 2) hexy = \"0\" + hexy;\n    trayConfig.tray.deviceMac.value = trayConfig.tray.deviceMac.value + \":\" + hexy;\n}\ntrayConfig.tray.routerMac.value = dataview.getUint8(10).toString(16);\nif (trayConfig.tray.routerMac.value.length < 2) trayConfig.tray.routerMac.value = \"0\" + trayConfig.tray.routerMac.value;\nfor (let ii = 1; ii < 6; ++ii)\n{\n    let hexy = dataview.getUint8(10 + ii).toString(16);\n    if (hexy.length < 2) hexy = \"0\" + hexy;\n    trayConfig.tray.routerMac.value = trayConfig.tray.routerMac.value + \":\" + hexy;\n}\n\nfor (let icube = 0; icube < trayConfig.picobusCubes.length; ++icube)\n{\n    let cube = trayConfig.tray[trayConfig.picobusCubes[icube]];\n    switch (cube.picobus.type) \n    {\n        case 'uint8':\n            cube.value = dataview.getUint8(cube.picobus.byteOffset + 16);\n            break;\n        case 'int8':\n            cube.value = dataview.getInt8(cube.picobus.byteOffset + 16);\n            break;\n        case 'uint16':\n            cube.value = dataview.getUint16(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int16':\n            cube.value = dataview.getInt16(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'uint32':\n            cube.value = dataview.getUint32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int32':\n            cube.value = dataview.getInt32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'uint64':\n            cube.value = dataview.getBigUint64(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int64':\n            cube.value = dataview.getBigInt64(cube.picobus.byteOffset + 16), true;\n            break;\n        case 'float32':\n            cube.value = dataview.getFloat32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'float64':\n            cube.value = dataview.getFloat64(cube.picobus.byteOffset + 16, true);\n            break;\n        default:\n            break;\n    }\n\n    let offset = 0;\n    if (cube.picobus.hasOwnProperty(\"offset\")) offset = cube.picobus.offset;\n    cube.value = (cube.value - offset) / cube.picobus.scale;\n}\ntrayConfig.tray.lastUpdate.value = 0;\n\ntrayConfig.tray.timeStamp = new Date().getTime();\nlet newMsg = {topic:trayName, payload:trayConfig.tray};\nlet archiveMsg = null;\n\nif (trayConfig.tray.forceArchiveData.value > 0)\n{\n    trayConfig.archiveTime = trayConfig.tray.timeStamp;\n    archiveMsg = newMsg;\n}\n\nlet archiveTimes = flow.get('archiveTimes');\nif ((trayConfig.tray.timeStamp - trayConfig.archiveTime) > trayConfig.tray.arcPeriod)\n{\n    trayConfig.archiveTime = trayConfig.tray.timeStamp;\n    archiveMsg = newMsg;\n}\nreturn  [newMsg,archiveMsg,null];\n",
+        "func": "let topicSplit = msg.topic.split('/');\nif (topicSplit[1] == 'tray') return [null,null,null];\nlet trayName = topicSplit[3];\nlet traysConfig = flow.get('traysConfig');\nif (traysConfig == undefined) return [null,null,null];\nif (traysConfig.length < 1) return [null,null,null];\nlet trayConfig = null;\nlet trayIndex = -1;\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.name == trayName)\n    {\n        trayConfig = traysConfig[ii];\n        trayIndex = ii;\n    }\n}\nif (trayConfig ==  null) return [null,null,null];\ntrayConfig.cubeType = topicSplit[1];\ntrayConfig.tray.timeStamp = new Date().getTime();\nlet dataview  = new DataView(new ArrayBuffer(msg.payload.length));\nfor (let ib = 0; ib < msg.payload.length; ++ib)   dataview.setUint8(ib, msg.payload[ib]);\nlet state = dataview.getUint8(0);\n\nif (state == 1)\n{\n    return [null, null, {topic:\"initDevice\",payload:trayConfig}];\n}\ntrayConfig.tray.forceArchiveData.value = dataview.getUint8(1);\ntrayConfig.tray.watchdog.value = dataview.getUint16(2,true);\ntrayConfig.tray.deviceMac.value = dataview.getUint8(4).toString(16);\nif (trayConfig.tray.deviceMac.value.length < 2) trayConfig.tray.deviceMac.value = \"0\" + trayConfig.tray.deviceMac.value;\nfor (let ii = 1; ii < 6; ++ii)\n{\n    let hexy = dataview.getUint8(4 + ii).toString(16);\n    if (hexy.length < 2) hexy = \"0\" + hexy;\n    trayConfig.tray.deviceMac.value = trayConfig.tray.deviceMac.value + \":\" + hexy;\n}\ntrayConfig.tray.routerMac.value = dataview.getUint8(10).toString(16);\nif (trayConfig.tray.routerMac.value.length < 2) trayConfig.tray.routerMac.value = \"0\" + trayConfig.tray.routerMac.value;\nfor (let ii = 1; ii < 6; ++ii)\n{\n    let hexy = dataview.getUint8(10 + ii).toString(16);\n    if (hexy.length < 2) hexy = \"0\" + hexy;\n    trayConfig.tray.routerMac.value = trayConfig.tray.routerMac.value + \":\" + hexy;\n}\n\nfor (let icube = 0; icube < trayConfig.picobusCubes.length; ++icube)\n{\n    let cube = trayConfig.tray[trayConfig.picobusCubes[icube]];\n    switch (cube.picobus.type) \n    {\n        case 'uint8':\n            cube.value = dataview.getUint8(cube.picobus.byteOffset + 16);\n            break;\n        case 'int8':\n            cube.value = dataview.getInt8(cube.picobus.byteOffset + 16);\n            break;\n        case 'uint16':\n            cube.value = dataview.getUint16(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int16':\n            cube.value = dataview.getInt16(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'uint32':\n            cube.value = dataview.getUint32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int32':\n            cube.value = dataview.getInt32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'uint64':\n            cube.value = dataview.getBigUint64(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'int64':\n            cube.value = dataview.getBigInt64(cube.picobus.byteOffset + 16), true;\n            break;\n        case 'float32':\n            cube.value = dataview.getFloat32(cube.picobus.byteOffset + 16, true);\n            break;\n        case 'float64':\n            cube.value = dataview.getFloat64(cube.picobus.byteOffset + 16, true);\n            break;\n        default:\n            break;\n    }\n\n    let offset = 0;\n    if (cube.picobus.hasOwnProperty(\"offset\")) offset = cube.picobus.offset;\n    cube.value = (cube.value - offset) / cube.picobus.scale;\n}\ntrayConfig.tray.lastUpdate.value = 0;\nlet adminTray = flow.get('adminTray');\n\nlet routerIndex = adminTray.routerList.value.findIndex(x => x.macAddress === trayConfig.tray.routerMac.value);\n\nif (routerIndex >= 0)\n{\n    trayConfig.tray.routerName.value = adminTray.routerList.value[routerIndex].name;\n    trayConfig.tray.routerXpos.value = adminTray.routerList.value[routerIndex].xpos;\n    trayConfig.tray.routerYpos.value = adminTray.routerList.value[routerIndex].ypos;\n}\nelse\n{\n    trayConfig.tray.routerName.value = 'none';\n    trayConfig.tray.routerXpos.value = 0;\n    trayConfig.tray.routerYpos.value = 0;\n}\nif (trayConfig.tray.iauth.value == 0) trayConfig.tray.user.value = 'none';\n\nif(trayConfig.tray.enableNtfy.value > 0)\n{\n    trayConfig.tray.statusCode.value = 0;\n    if (trayConfig.tray.ibutt.value > 0) trayConfig.tray.statusCode.value = 1;\n    if (trayConfig.tray.imove.value > 0) trayConfig.tray.statusCode.value = 2;\n    if ((trayConfig.tray.ichrg.value == 0) && (trayConfig.tray.iauth.value == 0)) trayConfig.tray.statusCode.value = 3;\n}\nelse\n{\n    trayConfig.tray.statusCode.value = -1;\n}\ntrayConfig.tray.timeStamp = new Date().getTime();\nlet badgeSummary = flow.get('badgeSummary');\nlet badgeSummaryIndex = badgeSummary.findIndex(x => x.name === trayConfig.tray.name);\nif (badgeSummaryIndex >= 0)\n{\n    badgeSummary[badgeSummaryIndex].user = trayConfig.tray.user.value;\n    badgeSummary[badgeSummaryIndex].status = trayConfig.tray.statusCode.value\n    badgeSummary[badgeSummaryIndex].router = trayConfig.tray.routerName.value\n}\n\nlet newMsg = {topic:trayName, payload:trayConfig.tray};\nlet archiveMsg = null;\n\nif (trayConfig.tray.forceArchiveData.value > 0)\n{\n    trayConfig.archiveTime = trayConfig.tray.timeStamp;\n    archiveMsg = newMsg;\n}\n\nlet archiveTimes = flow.get('archiveTimes');\nif ((trayConfig.tray.timeStamp - trayConfig.archiveTime) > trayConfig.tray.arcPeriod)\n{\n    trayConfig.archiveTime = trayConfig.tray.timeStamp;\n    archiveMsg = newMsg;\n}\nreturn  [newMsg,archiveMsg,null];\n",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -701,7 +712,7 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Create Setting",
-        "func": "let tray = msg.trayConfig.tray;\nif (tray[msg.payload.cube].hasOwnProperty('enabled'))\n{\n    if (tray[msg.payload.cube].enabled == 0 ) return [null, null, null]\n}\nlet mqttMsg = null;\nlet normalSettingMsg = {topic:'settingDone', payload:tray};\nlet trayControlMessage = null;\nlet trayProps  = flow.get('trayProps');\n\nlet icube = msg.trayConfig.picobusSettingCubes.indexOf(msg.payload.cube);\n\nif (icube >= 0)\n{\n    msg.trayConfig.tray[msg.payload.cube].value = msg.payload.value;\n    mqttMsg = {topic:\"initDevice\",payload:msg.trayConfig};\n}\nelse\n{\n    switch (msg.payload.cube) \n    {\n        case 'alias':\n            tray.alias.value = msg.payload.value;\n        break;\n        case 'trayControl':\n            switch(msg.payload.value)\n            {\n                case 0:\n                    tray.trayControl.value = 0;\n                    break;\n                case 1:\n                    tray.trayControl.value = -1;\n                    break;\n                case 2:\n                    if (tray.trayControl.value > 0)\n                    {\n                        tray.trayControl.value = 2;\n                        trayControlMessage =\n                        {\n                            topic: trayProps.box + '/tray/' + tray.type + '/' + tray.name + '/echo',\n                            payload: JSON.stringify({ topic: trayProps.box + '/tray/' + tray.type + '/' + tray.name + '/setting/echo' })\n                        };\n                    }\n                    break;\n                default:\n                    tray.trayControl.value = 0;\n                    break;\n             }\n        break;\n        default:\n            break;\n    }\n}\nreturn [mqttMsg, normalSettingMsg, trayControlMessage];",
+        "func": "let tray = msg.trayConfig.tray;\nif (tray[msg.payload.cube].hasOwnProperty('enabled'))\n{\n    if (tray[msg.payload.cube].enabled == 0 ) return [null, null, null]\n}\nlet mqttMsg = null;\nlet normalSettingMsg = {topic:'settingDone', payload:tray};\nlet trayControlMessage = null;\nlet trayProps  = flow.get('trayProps');\n\nlet icube = msg.trayConfig.picobusSettingCubes.indexOf(msg.payload.cube);\n\nif (icube >= 0)\n{\n    msg.trayConfig.tray[msg.payload.cube].value = msg.payload.value;\n    mqttMsg = {topic:\"initDevice\",payload:msg.trayConfig};\n}\nelse\n{\n    switch (msg.payload.cube) \n    {\n        case 'alias':\n            tray.alias.value = msg.payload.value;\n        break;\n        case 'user':\n            tray.user.value = msg.payload.value;\n        break;\n        case 'enableNtfy':\n            tray.enableNtfy.value = msg.payload.value;\n            if (tray.enableNtfy.value < 1)\n            {\n                tray.statusCode.value = -1;\n            }\n            else\n            {\n                tray.statusCode.value = 0;\n            }\n        break;\n        case 'trayControl':\n            switch(msg.payload.value)\n            {\n                case 0:\n                    tray.trayControl.value = 0;\n                    break;\n                case 1:\n                    tray.trayControl.value = -1;\n                    break;\n                case 2:\n                    if (tray.trayControl.value > 0)\n                    {\n                        tray.trayControl.value = 2;\n                        trayControlMessage =\n                        {\n                            topic: trayProps.box + '/tray/' + tray.type + '/' + tray.name + '/echo',\n                            payload: JSON.stringify({ topic: trayProps.box + '/tray/' + tray.type + '/' + tray.name + '/setting/echo' })\n                        };\n                    }\n                    break;\n                default:\n                    tray.trayControl.value = 0;\n                    break;\n             }\n        break;\n        default:\n            break;\n    }\n}\nreturn [mqttMsg, normalSettingMsg, trayControlMessage];",
         "outputs": 3,
         "timeout": "",
         "noerr": 0,
@@ -971,8 +982,9 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Check for stale trays",
-        "func": "let traysConfig = flow.get('traysConfig');\nlet now = new Date().getTime();\nlet staleTrays = [];\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.hasOwnProperty('lastUpdate'))\n    {\n        let milli = now - traysConfig[ii].tray.timeStamp;\n        traysConfig[ii].tray.lastUpdate.value = Math.round(milli / 3600) / 1000;\n        if (milli > traysConfig[ii].tray.arcPeriod)\n        {\n            staleTrays.push(traysConfig[ii].tray);\n        }\n    }\n}\nif (staleTrays.length < 1) return null;\nreturn {topic: 'staleTrays',payload:staleTrays};",
+        "func": "let traysConfig = flow.get('traysConfig');\nlet now = new Date().getTime();\nlet staleTrays = [];\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.hasOwnProperty('lastUpdate'))\n    {\n        let milli = now - traysConfig[ii].tray.timeStamp;\n        traysConfig[ii].tray.lastUpdate.value = Math.round(milli / 3600) / 1000;\n        if (milli > traysConfig[ii].tray.arcPeriod)\n        {\n            traysConfig[ii].tray.statusCode.value = 4;\n            staleTrays.push(traysConfig[ii].tray);\n            let badgeSummary = flow.get('badgeSummary');\n            let badgeSummaryIndex = badgeSummary.findIndex(x => x.name === traysConfig[ii].tray.name);\n            if (badgeSummaryIndex >= 0)\n            {\n                badgeSummary[badgeSummaryIndex].status = traysConfig[ii].tray.statusCode.value\n            }\n        }\n    }\n}\nif (staleTrays.length < 1) return null;\nreturn {topic: 'staleTrays',payload:staleTrays};",
         "outputs": 1,
+        "timeout": "",
         "noerr": 0,
         "initialize": "",
         "finalize": "",
@@ -1011,7 +1023,9 @@
         "name": "Stale Tray out",
         "mode": "link",
         "links": [
-            "6b45b4c31fad6b8b"
+            "6b45b4c31fad6b8b",
+            "8c3a8a2ad2d24b5c",
+            "308dd6d5df455e02"
         ],
         "x": 785,
         "y": 860,
@@ -1100,6 +1114,169 @@
         "wires": [
             [
                 "8674b6870aed740f"
+            ]
+        ]
+    },
+    {
+        "id": "b0dea0845c5deb2b",
+        "type": "function",
+        "z": "35ebad916f0a27ed",
+        "name": "ntfy msgs",
+        "func": "let btray = msg.payload;\nif (btray.statusCode.value < 1) return null;\n\nlet badgeHistory = context.get(\"badgeHistory\");\nlet oldTime = new Date().getTime() - Number(env.get('NTFY_TIMEOUT'));\n\nlet newHistory = badgeHistory.filter(function (el) \n{\n  return el.timeStamp >= oldTime;\n});\nlet index = -1;\nfor (let ibadge in newHistory)\n{\n    if (newHistory[ibadge].name.value == btray.name.value) index = Number(ibadge);\n}\nlet sendNotification = false\nif (index < 0)\n{\n    sendNotification = true;\n    newHistory.push(JSON.parse(JSON.stringify(btray)));\n    \n}\nelse\n{\n    let newStatusCode = btray.statusCode.value;\n    let oldStatusCode = newHistory[index].statusCode.value;\n    if (newStatusCode != oldStatusCode)\n    {\n        sendNotification = true;\n        newHistory[index] = JSON.parse(JSON.stringify(btray));\n    }\n}\ncontext.set(\"badgeHistory\", newHistory);\nif (!sendNotification) return null;\n\nlet location = \"unknown\";\nif (btray.routerName.value != 'none') location = btray.routerName.value;\n\nlet message = \"\";\n\nif (btray.statusCode.value == 1) \n{\n    message = \"Assistance requested by user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 2)   \n{\n    message = \"No motion detected from user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 3)\n{\n    message = \"Unauthorized access with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 4) \n{\n    message = \"No update from user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\n\nlet rateLimit = 200;\nlet url = \"http://\" + env.get(\"NTFYIP\") + \"/iwa\";\nreturn {topic:\"iwa\",url:url, payload:message,rate:rateLimit};\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "context.set(\"badgeHistory\",[])",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 900,
+        "wires": [
+            [
+                "58e7330582ef318a"
+            ]
+        ]
+    },
+    {
+        "id": "82c50073c6c82ff2",
+        "type": "http request",
+        "z": "35ebad916f0a27ed",
+        "name": "",
+        "method": "POST",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "basic",
+        "senderr": false,
+        "headers": [],
+        "x": 1610,
+        "y": 900,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "58e7330582ef318a",
+        "type": "delay",
+        "z": "35ebad916f0a27ed",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": true,
+        "outputs": 1,
+        "x": 1410,
+        "y": 900,
+        "wires": [
+            [
+                "82c50073c6c82ff2"
+            ]
+        ]
+    },
+    {
+        "id": "8c3a8a2ad2d24b5c",
+        "type": "link in",
+        "z": "35ebad916f0a27ed",
+        "name": "badges to ntfy",
+        "links": [
+            "fa6fa09999cb358d",
+            "cffe9c2a52b1e43e"
+        ],
+        "x": 1115,
+        "y": 900,
+        "wires": [
+            [
+                "b0dea0845c5deb2b"
+            ]
+        ]
+    },
+    {
+        "id": "efb3c4186007a047",
+        "type": "debug",
+        "z": "35ebad916f0a27ed",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1780,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "4e3281f0980615b3",
+        "type": "function",
+        "z": "35ebad916f0a27ed",
+        "name": "Update Admin Tray",
+        "func": "let adminTray = JSON.parse(JSON.stringify(flow.get('adminTray')));\nadminTray.badgeStatus.value = flow.get('badgeSummary');\nlet newMsg = \n{\n    topic: flow.get('trayProps').box + '/tray/' + adminTray.type + '/admin/reading',\n    payload: JSON.stringify(adminTray)\n};\nreturn  newMsg;  \n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1470,
+        "y": 540,
+        "wires": [
+            [
+                "da53528b4fc27b27"
+            ]
+        ]
+    },
+    {
+        "id": "308dd6d5df455e02",
+        "type": "link in",
+        "z": "35ebad916f0a27ed",
+        "name": "Publish admin tray",
+        "links": [
+            "cffe9c2a52b1e43e",
+            "fa6fa09999cb358d"
+        ],
+        "x": 1325,
+        "y": 540,
+        "wires": [
+            [
+                "4e3281f0980615b3"
+            ]
+        ]
+    },
+    {
+        "id": "da53528b4fc27b27",
+        "type": "delay",
+        "z": "35ebad916f0a27ed",
+        "name": "",
+        "pauseType": "delay",
+        "timeout": "2",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1640,
+        "y": 540,
+        "wires": [
+            [
+                "05f1df43d04e1ad1"
             ]
         ]
     }

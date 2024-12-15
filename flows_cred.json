@@ -2,5 +2,9 @@
     "84d80994.260508": {
         "user": "$(MQTTUSERNAME)",
         "password": "$(MQTTPASSWORD)"
+    },
+    "82c50073c6c82ff2": {
+        "user": "$(NTFYUSERNAME)",
+        "password": "$(NTFYPASSWORD)"
     }
 }
