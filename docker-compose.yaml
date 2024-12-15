@@ -1,0 +1,27 @@
+version: "3.7"
+services:
+  bl-iwa-wifi-trays:
+    image: blinkylite/bl-iwa-wifi-trays:${DOCKER_TAG}
+    restart: unless-stopped
+    container_name: ${TRAYTYPE}
+#    ports:
+#      - "60430:60430"
+    environment:
+      - BOX=${BOX}
+      - TRAYTYPE=${TRAYTYPE}
+      - MQTTCLIENTID=${BOX}-${TRAYTYPE}
+      - MQTTSERVERIP=blinky-mqtt
+      - MQTTUSERNAME=${BOX}
+      - MQTTPASSWORD=${BLINKYPASSWORD}
+      - MQTTPORT=1883
+      - NTFY_TIMEOUT=${NTFY_TIMEOUT}
+      - NTFYIP=blinky-ntfy:80
+      - NTFYUSERNAME=admin
+      - NTFYPASSWORD=${BLINKYPASSWORD}
+      - NODEREDPORT=60430
+      - ENABLE_NODERED_EDITOR=0
+networks:
+  default:
+    name: tunnel
+    external: true
+
