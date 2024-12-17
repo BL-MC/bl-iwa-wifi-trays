@@ -982,7 +982,7 @@
         "type": "function",
         "z": "35ebad916f0a27ed",
         "name": "Check for stale trays",
-        "func": "let traysConfig = flow.get('traysConfig');\nlet now = new Date().getTime();\nlet staleTrays = [];\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.hasOwnProperty('lastUpdate'))\n    {\n        let milli = now - traysConfig[ii].tray.timeStamp;\n        traysConfig[ii].tray.lastUpdate.value = Math.round(milli / 3600) / 1000;\n        if (milli > traysConfig[ii].tray.arcPeriod)\n        {\n            traysConfig[ii].tray.statusCode.value = 4;\n            staleTrays.push(traysConfig[ii].tray);\n            let badgeSummary = flow.get('badgeSummary');\n            let badgeSummaryIndex = badgeSummary.findIndex(x => x.name === traysConfig[ii].tray.name);\n            if (badgeSummaryIndex >= 0)\n            {\n                badgeSummary[badgeSummaryIndex].status = traysConfig[ii].tray.statusCode.value\n            }\n        }\n    }\n}\nif (staleTrays.length < 1) return null;\nreturn {topic: 'staleTrays',payload:staleTrays};",
+        "func": "let traysConfig = flow.get('traysConfig');\nlet now = new Date().getTime();\nlet staleTrays = [];\nfor (let ii = 0; ii < traysConfig.length; ++ii)\n{\n    if (traysConfig[ii].tray.hasOwnProperty('lastUpdate'))\n    {\n        let milli = now - traysConfig[ii].tray.timeStamp;\n        traysConfig[ii].tray.lastUpdate.value = Math.round(milli / 3600) / 1000;\n        if (milli > traysConfig[ii].tray.arcPeriod)\n        {\n            if(traysConfig[ii].tray.enableNtfy.value > 0)\n            {\n                traysConfig[ii].tray.statusCode.value = 4;\n            }\n            else\n            {\n                traysConfig[ii].tray.statusCode.value = -1;\n            }\n            staleTrays.push(traysConfig[ii].tray);\n            let badgeSummary = flow.get('badgeSummary');\n            let badgeSummaryIndex = badgeSummary.findIndex(x => x.name === traysConfig[ii].tray.name);\n            if (badgeSummaryIndex >= 0)\n            {\n                badgeSummary[badgeSummaryIndex].status = traysConfig[ii].tray.statusCode.value\n            }\n        }\n    }\n}\nif (staleTrays.length < 1) return null;\nreturn {topic: 'staleTrays',payload:staleTrays};",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -1156,7 +1156,9 @@
         "x": 1610,
         "y": 900,
         "wires": [
-            []
+            [
+                "efb3c4186007a047"
+            ]
         ]
     },
     {
