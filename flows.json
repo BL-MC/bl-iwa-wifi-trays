@@ -1261,10 +1261,10 @@
         "id": "da53528b4fc27b27",
         "type": "delay",
         "z": "35ebad916f0a27ed",
-        "name": "",
+        "name": "100 milliseconds",
         "pauseType": "delay",
-        "timeout": "2",
-        "timeoutUnits": "seconds",
+        "timeout": "100",
+        "timeoutUnits": "milliseconds",
         "rate": "1",
         "nbRateUnits": "1",
         "rateUnits": "second",
@@ -1274,7 +1274,7 @@
         "drop": false,
         "allowrate": false,
         "outputs": 1,
-        "x": 1640,
+        "x": 1670,
         "y": 540,
         "wires": [
             [
