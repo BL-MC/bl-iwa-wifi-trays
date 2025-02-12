@@ -19,6 +19,7 @@ services:
       - NTFYUSERNAME=admin
       - NTFYPASSWORD=${BLINKYPASSWORD}
       - NODEREDPORT=60430
+      - HUB=${HUB}
       - ENABLE_NODERED_EDITOR=0
 networks:
   default:
