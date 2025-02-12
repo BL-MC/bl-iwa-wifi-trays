@@ -285,7 +285,8 @@
         "links": [
             "063def90cca3eae3",
             "55b54f13100eb833",
-            "7c04905765b7cb23"
+            "7c04905765b7cb23",
+            "936255bf84159a81"
         ],
         "x": 1595,
         "y": 240,
@@ -1165,7 +1166,7 @@
         "y": 900,
         "wires": [
             [
-                "efb3c4186007a047"
+                "70dc15d3425590c2"
             ]
         ]
     },
@@ -1207,26 +1208,10 @@
         "y": 900,
         "wires": [
             [
-                "b0dea0845c5deb2b"
+                "b0dea0845c5deb2b",
+                "0bc5115ac8c997f6"
             ]
         ]
-    },
-    {
-        "id": "efb3c4186007a047",
-        "type": "debug",
-        "z": "35ebad916f0a27ed",
-        "name": "debug 1",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 1780,
-        "y": 900,
-        "wires": []
     },
     {
         "id": "4e3281f0980615b3",
@@ -1322,6 +1307,80 @@
         ],
         "x": 1085,
         "y": 660,
+        "wires": []
+    },
+    {
+        "id": "0bc5115ac8c997f6",
+        "type": "function",
+        "z": "35ebad916f0a27ed",
+        "name": "ntfy msgs",
+        "func": "let btray = msg.payload;\nif (btray.statusCode.value < 1) return null;\n\nlet badgeHistory = context.get(\"badgeHistory\");\nlet oldTime = new Date().getTime() - Number(env.get('NTFY_TIMEOUT'));\n\nlet newHistory = badgeHistory.filter(function (el) \n{\n  return el.timeStamp >= oldTime;\n});\nlet index = -1;\nfor (let ibadge in newHistory)\n{\n    if (newHistory[ibadge].name.value == btray.name.value) index = Number(ibadge);\n}\nlet sendNotification = false\nif (index < 0)\n{\n    sendNotification = true;\n    newHistory.push(JSON.parse(JSON.stringify(btray)));\n    \n}\nelse\n{\n    let newStatusCode = btray.statusCode.value;\n    let oldStatusCode = newHistory[index].statusCode.value;\n    if (newStatusCode != oldStatusCode)\n    {\n        sendNotification = true;\n        newHistory[index] = JSON.parse(JSON.stringify(btray));\n    }\n}\ncontext.set(\"badgeHistory\", newHistory);\nif (!sendNotification) return null;\n\nlet location = \"unknown\";\nif (btray.routerName.value != 'none') location = btray.routerAlias.value;\n\nlet message = \"\";\n\nif (btray.statusCode.value == 1) \n{\n    message = \"Assistance requested by user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 2)   \n{\n    message = \"No motion detected from user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 3)\n{\n    message = \"Unauthorized access with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nif (btray.statusCode.value == 4) \n{\n    message = \"No update from user \" + btray.user.value + \" with  Badge \" + btray.name.toString() + \" at location \" + location;\n}\nlet payloadMsg = \n{\n    type: \"message\",\n    content: message,\n    topic: msg.payload.type + '/' + msg.payload.name + '/statusCode',\n}\nlet rateLimit = 200;\nreturn {topic:env.get(\"BOX\") + '/' + env.get(\"HUB\") + \"/alarm\", payload:payloadMsg,rate:rateLimit};\n",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "context.set(\"badgeHistory\",[])",
+        "finalize": "",
+        "libs": [],
+        "x": 1240,
+        "y": 980,
+        "wires": [
+            [
+                "08a61a4527218342"
+            ]
+        ]
+    },
+    {
+        "id": "08a61a4527218342",
+        "type": "delay",
+        "z": "35ebad916f0a27ed",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "1",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": true,
+        "outputs": 1,
+        "x": 1410,
+        "y": 980,
+        "wires": [
+            [
+                "936255bf84159a81"
+            ]
+        ]
+    },
+    {
+        "id": "936255bf84159a81",
+        "type": "link out",
+        "z": "35ebad916f0a27ed",
+        "name": "ntfy out",
+        "mode": "link",
+        "links": [
+            "f882c2407b2620be"
+        ],
+        "x": 1545,
+        "y": 980,
+        "wires": []
+    },
+    {
+        "id": "70dc15d3425590c2",
+        "type": "debug",
+        "z": "35ebad916f0a27ed",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1800,
+        "y": 900,
         "wires": []
     }
 ]
